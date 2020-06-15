@@ -18,7 +18,7 @@ public class ArrayDeque<genType>{
     public ArrayDeque(genType i){
         items = (genType[]) new Object[8];
         items[0] = i;
-        front = 0;
+        front = 0;                      //front and back will both be the one item in list at creation
         back = 0;
         size = 1;
     }
@@ -34,32 +34,33 @@ public class ArrayDeque<genType>{
 
     /** add element to beginning of list */
     public void addFirst(genType item){
-        if (size == items.length){
+        if (size == items.length){              //checks to see if array needs to be made larger
             resize(size * 2);
         }
-        items[items.length - size] = item;     // adds item to end side of array, but it wil be front of DLList
-        front = items.length - size;
+        items[items.length - size] = item;     // adds item to end of array, but it will be front of DLList
+        front = items.length - size;            // change front to new item
         size += 1;
-
     }
 
     /** add element to end of list */
     public void addLast(genType item){
-        if (size == items.length){
+        if (size == items.length){              //checks to see if array needs to be made larger
             resize(size * 2);
         }
-        items[size] = item;
-        back = size;
+        back += 1;
+        items[back] = item;   // adds item to back end of list in array
         size += 1;
     }
 
     /** return true/false if list is empty or not */
     public boolean isEmpty(){
-        if (size() == 0){
-            return true;
-        }else{
-            return false;
-        }
+        return size() == 0;
+    }
+
+    /** checks if usage ratio is low enough to resize   if R < 0.25 then array should half */
+    public boolean checkRatio(){
+        double R = size / items.length;
+        return R < 0.25;
     }
 
     /** returns the size of array */
@@ -69,14 +70,24 @@ public class ArrayDeque<genType>{
 
     public void resize(int capacity){
         genType[] copy = (genType[]) new Object[capacity];
-        System.arraycopy(items, 0, copy, 0, size);
+        System.arraycopy(items, front, copy, 0, items.length - front);
+        if (front != 0){
+            System.arraycopy(items, 0, copy, items.length - front, back + 1);
+        }
+        front = 0;
+        back = size - 1;
         items = copy;
     }
 
     /** prints out the DLList with space between each element */
     public void printDeque(){
-        for (int i = 0; i < size; i += 1){
-            System.out.print(items[i] + " ");
+        if (front != 0) {                                       //if front is not at index 0, need to print those first
+            for (int i = front; i < items.length; i += 1) {
+                System.out.print(items[i] + " ");
+            }
+        }
+        for (int j = 0; j <= back; j += 1){
+            System.out.print(items[j] + " ");
         }
         System.out.println();
     }
@@ -86,7 +97,12 @@ public class ArrayDeque<genType>{
         genType value = items[front];
         items[front] = null;
         size -= 1;
-        front = items.length - size;
+        if (checkRatio()) {                         //check to see if need to make array smaller after removal
+            int newSize = (int) (items.length / 2);
+            resize(newSize);
+        }else {
+            front = items.length - size;
+        }
         return value;
     }
 
@@ -95,13 +111,25 @@ public class ArrayDeque<genType>{
         genType value = items[back];
         items[back] = null;
         size -= 1;
-        back = size - 1;
+        if (checkRatio()) {                         //check to see if need to make array smaller after removal
+            int newSize = (int) (items.length / 2);
+            resize(newSize);
+        }else {
+            back = back - 1;
+        }
         return value;
     }
 
     /** get value of element at index */
     public genType get(int index){
-        return items[index];
+        int distanceFromZero = items.length - front;     // distance of front item to end of array
+        if (front == 0) {                               // if front is items[0], then just use basic indexing
+            return items[index];
+        }else if (index >= (distanceFromZero)){        // if the index is higher than the number of items at end of array
+            return items[index - (distanceFromZero)];
+        }else {
+            return items[items.length - (distanceFromZero - index)];  // index is lower than number of items at end of array
+        }
     }
 }
 
