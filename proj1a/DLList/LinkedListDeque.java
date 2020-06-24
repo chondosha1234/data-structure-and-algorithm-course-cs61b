@@ -2,7 +2,7 @@
  * from front and back.
  * @param <genType>
  */
-public class LinkedListDeque<genType>{
+public class LinkedListDeque<genType> implements Deque<genType>{
 
     /** naked recursive structure for DLList.  It has instance variables for item, previous and next */
     private class TypeNode{
@@ -48,32 +48,27 @@ public class LinkedListDeque<genType>{
     }
 
     /** adds item to beginning of list, should take constant time */
+    @Override
     public void addFirst(genType item){
         sentinel.next = new TypeNode(sentinel, item, sentinel.next);
         size += 1;
     }
 
     /** adds item to end of list, should take constant time */
+    @Override
     public void addLast(genType item){
         sentinel.prev = new TypeNode(sentinel.prev, item, sentinel);
         size += 1;
     }
 
-    /** returns True/False if list is empty or not */
-    public boolean isEmpty(){
-        if (size() == 0){
-            return true;
-        }else{
-            return false;
-        }
-    }
-
     /** returns integer number of items in list, should use constant time */
+    @Override
     public int size(){
         return size;
     }
 
     /** prints contents of DLList with space between each item and newline after */
+    @Override
     public void printDeque(){
         TypeNode copy = sentinel.next;
         while (copy != sentinel && copy != null){
@@ -84,6 +79,7 @@ public class LinkedListDeque<genType>{
     }
 
     /** remove item at beginning and return it, use constant time */
+    @Override
     public genType removeFirst(){
         genType value = sentinel.next.item;
         sentinel.next = sentinel.next.next;
@@ -92,6 +88,7 @@ public class LinkedListDeque<genType>{
     }
 
     /** remove item at end and return it, use constant time */
+    @Override
     public genType removeLast(){
         genType value = sentinel.prev.item;
         sentinel.prev = sentinel.prev.prev;
@@ -100,6 +97,7 @@ public class LinkedListDeque<genType>{
     }
 
     /** returns item at specific index in list, must use iteration */
+    @Override
     public genType get(int index){
         genType value;
         TypeNode current = sentinel.next;

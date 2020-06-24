@@ -2,7 +2,7 @@
  * from front and back.  Uses arrays as core data structure
  * @param <genType>
  */
-public class ArrayDeque<genType>{
+public class ArrayDeque<genType> implements Deque<genType>{
 
     private genType[] items;    // creates array which will hold DLList
     private int size;           //size of DLList, not array
@@ -33,6 +33,7 @@ public class ArrayDeque<genType>{
     }
 
     /** add element to beginning of list */
+    @Override
     public void addFirst(genType item){
         if (size == items.length){              //checks to see if array needs to be made larger
             resize(size * 2);
@@ -43,6 +44,7 @@ public class ArrayDeque<genType>{
     }
 
     /** add element to end of list */
+    @Override
     public void addLast(genType item){
         if (size == items.length){              //checks to see if array needs to be made larger
             resize(size * 2);
@@ -52,11 +54,6 @@ public class ArrayDeque<genType>{
         size += 1;
     }
 
-    /** return true/false if list is empty or not */
-    public boolean isEmpty(){
-        return size() == 0;
-    }
-
     /** checks if usage ratio is low enough to resize   if R < 0.25 then array should half */
     public boolean checkRatio(){
         double R = size / items.length;
@@ -64,6 +61,7 @@ public class ArrayDeque<genType>{
     }
 
     /** returns the size of array */
+    @Override
     public int size(){
         return size;
     }
@@ -80,6 +78,7 @@ public class ArrayDeque<genType>{
     }
 
     /** prints out the DLList with space between each element */
+    @Override
     public void printDeque(){
         if (front != 0) {                                       //if front is not at index 0, need to print those first
             for (int i = front; i < items.length; i += 1) {
@@ -93,6 +92,7 @@ public class ArrayDeque<genType>{
     }
 
     /** remove first element of list and return value */
+    @Override
     public genType removeFirst(){
         genType value = items[front];
         items[front] = null;
@@ -107,6 +107,7 @@ public class ArrayDeque<genType>{
     }
 
     /** remove last element of list and return value */
+    @Override
     public genType removeLast(){
         genType value = items[back];
         items[back] = null;
@@ -121,6 +122,7 @@ public class ArrayDeque<genType>{
     }
 
     /** get value of element at index */
+    @Override
     public genType get(int index){
         int distanceFromZero = items.length - front;     // distance of front item to end of array
         if (front == 0) {                               // if front is items[0], then just use basic indexing
