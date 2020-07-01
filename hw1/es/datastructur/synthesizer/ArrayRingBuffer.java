@@ -1,11 +1,8 @@
 package es.datastructur.synthesizer;
 import java.util.Iterator;
 
-//TODO: Make sure to that this class and all of its methods are public
-//TODO: Make sure to add the override tag for all overridden methods
-//TODO: Make sure to make this class implement BoundedQueue<T>
 
-public class ArrayRingBuffer<T>  {
+public class ArrayRingBuffer<T> implements BoundedQueue<T>{
     /* Index for the next dequeue or peek. */
     private int first;
     /* Index for the next enqueue. */
@@ -19,38 +16,61 @@ public class ArrayRingBuffer<T>  {
      * Create a new ArrayRingBuffer with the given capacity.
      */
     public ArrayRingBuffer(int capacity) {
-        // TODO: Create new array with capacity elements.
-        //       first, last, and fillCount should all be set to 0.
+        rb = (T[]) new Object[capacity];
+        fillCount = 0;
+        first = 0;
+        last = 0;
+    }
+
+    /** return the capacity of ring buffer */
+    @Override
+    public int capacity() {
+        return rb.length;
+    }
+
+    /** return the number of items in queue */
+    @Override
+    public int fillCount() {
+        return fillCount;
     }
 
     /**
      * Adds x to the end of the ring buffer. If there is no room, then
      * throw new RuntimeException("Ring buffer overflow").
      */
+    @Override
     public void enqueue(T x) {
-        // TODO: Enqueue the item. Don't forget to increase fillCount and update
-        //       last.
-        return;
+        rb[last] = x;     // invariant: item added to end will be at position last (one after the prev value)
+        fillCount += 1;
+        last += 1;
+        if (last == rb.length){    // if last gets to end of array, circle back to beginning
+            last = 0;
+        }
     }
 
     /**
      * Dequeue oldest item in the ring buffer. If the buffer is empty, then
      * throw new RuntimeException("Ring buffer underflow").
      */
+    @Override
     public T dequeue() {
-        // TODO: Dequeue the first item. Don't forget to decrease fillCount and
-        //       update first.
-        return null;
+        T value = rb[first];
+        rb[first] = null;    // remove item from array
+        fillCount -= 1;       // minus fillCount because item removed
+        first += 1;
+        if (first == rb.length){    //if you get to end of array, first will circle back to beginning
+            first = 0;
+        }
+        return value;
     }
 
     /**
-     * Return oldest item, but don't remove it. If the buffer is empty, then
+     * Return oldest (first) item, but don't remove it. If the buffer is empty, then
      * throw new RuntimeException("Ring buffer underflow").
      */
+    @Override
     public T peek() {
-        // TODO: Return the first item. None of your instance variables should
-        //       change.
-        return null;
+        return rb[first];
     }
 
     // TODO: When you get to part 4, implement the needed code to support
