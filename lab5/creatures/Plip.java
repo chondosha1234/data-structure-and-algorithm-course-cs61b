@@ -30,14 +30,15 @@ public class Plip extends Creature {
      */
     private int b;
 
+
     /**
      * creates plip with energy equal to E.
      */
     public Plip(double e) {
         super("plip");
-        r = 0;
-        g = 0;
-        b = 0;
+        r = 99;
+        g = 255;
+        b = 76;
         energy = e;
     }
 
@@ -57,7 +58,8 @@ public class Plip extends Creature {
      * that you get this exactly correct.
      */
     public Color color() {
-        g = 63;
+        int e = (int) energy;
+        g = 63 + (96 * e);
         return color(r, g, b);
     }
 
@@ -74,7 +76,8 @@ public class Plip extends Creature {
      * private static final variable. This is not required for this lab.
      */
     public void move() {
-        // TODO
+        energy -= 0.15;
+        energy = Math.max(energy, 0);
     }
 
 
@@ -82,7 +85,8 @@ public class Plip extends Creature {
      * Plips gain 0.2 energy when staying due to photosynthesis.
      */
     public void stay() {
-        // TODO
+        energy += 0.2;
+        energy = Math.min(energy, 2.0);
     }
 
     /**
@@ -91,7 +95,9 @@ public class Plip extends Creature {
      * Plip.
      */
     public Plip replicate() {
-        return this;
+        energy = energy / 2;
+        Plip copy = new Plip(energy);
+        return copy;
     }
 
     /**
@@ -111,20 +117,49 @@ public class Plip extends Creature {
         // Rule 1
         Deque<Direction> emptyNeighbors = new ArrayDeque<>();
         boolean anyClorus = false;
-        // TODO
+        boolean possibleMove = false;
+
+        for (Direction direction : neighbors.keySet()){
+            if (neighbors.get(direction).name().equals("empty")){
+                possibleMove = true;
+                emptyNeighbors.add(direction);
+            }
+            if (neighbors.get(direction).name().equals("clorus")){
+                anyClorus = true;
+            }
+        }
+        if (!possibleMove){
+            return new Action(Action.ActionType.STAY);
+        }
         // (Google: Enhanced for-loop over keys of NEIGHBORS?)
         // for () {...}
 
-        if (false) { // FIXME
-            // TODO
+        if (energy >= 1.0) {
+            return new Action(Action.ActionType.REPLICATE, randomEntry(emptyNeighbors));
         }
-
         // Rule 2
         // HINT: randomEntry(emptyNeighbors)
 
         // Rule 3
+        if (anyClorus){
+            if (Math.random() < 0.5) {
+                return new Action(Action.ActionType.MOVE, randomEntry(emptyNeighbors));
+            }
+        }
 
         // Rule 4
         return new Action(Action.ActionType.STAY);
+    }
+
+    static Direction randomEntry(Deque<Direction> emptyNeighbors) {
+        if (emptyNeighbors.isEmpty()){
+            return null;
+        }
+        for (Direction direction : emptyNeighbors){
+            if (Math.random() < 0.5) {
+                return direction;
+            }
+        }
+        return emptyNeighbors.getFirst();
     }
 }
