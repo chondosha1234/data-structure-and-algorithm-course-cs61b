@@ -24,7 +24,7 @@ public class FLIterator<T> implements Iterator<T> {
 
     public T next(){
         if (!hasNext()){
-            throw new NoSuchElementException;
+            throw new NoSuchElementException();
         }
         index += 1;
         return list.get(index-1);
