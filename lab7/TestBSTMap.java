@@ -78,6 +78,15 @@ public class TestBSTMap {
     }
 
     public static void main(String[] args) {
-        jh61b.junit.TestRunner.runTests(TestBSTMap.class);
+        //jh61b.junit.TestRunner.runTests(TestBSTMap.class);
+        BSTMap<Integer, Integer> map = new BSTMap<>();
+        map.put(4,4);
+        map.put(2, 2);
+        map.put(1, 1);
+        map.put(3, 3);
+        map.put(6, 6);
+        map.put(5, 5);
+        map.put(7, 7);
+        map.printInOrder();
     }
 }
