@@ -29,4 +29,21 @@ public class ExperimentHelper {
     public static double optimalAverageDepth(int N) {
         return 0;
     }
+
+    /** inserts randomly into tree */
+    public static void insertRandom(BST B){
+        int r = RandomGenerator.getRandomInt(1000000);
+        B.add(r);
+
+    }
+
+    public static void deleteRandom(BST B){
+        Comparable randomKey = B.getRandomKey();
+        B.deleteTakingSuccessor(randomKey);
+    }
+
+    public static void deleteRandomTwo(BST B){
+        Comparable randomKey = B.getRandomKey();
+        B.deleteTakingRandom(randomKey);
+    }
 }
