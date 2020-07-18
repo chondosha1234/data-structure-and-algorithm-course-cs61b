@@ -211,7 +211,7 @@ public class BSTMap<Key extends Comparable<Key>, Value> implements Map61B<Key, V
         }
 
         /** pushes nodes into stack
-         * will put root in then put each nod going down to the left until the end
+         * will put root in then put each node going down to the left until the end
          * the next time it is called in NEXT(), it will have returned some values from the stack
          * and then call the method again on the right which will go down each branch as it continues up
          * the tree on one side   */
