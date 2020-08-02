@@ -37,6 +37,7 @@ public class Graph {
         succ.addNeighbor(pred);
     }
 
+
     /**
      * Returns a set of all nodes' labels in the graph.
      */

@@ -1,3 +1,5 @@
+import edu.princeton.cs.algs4.WeightedQuickUnionUF;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
@@ -23,8 +25,30 @@ public class SeparableEnemySolver {
      * Returns true if input is separable, false otherwise.
      */
     public boolean isSeparable() {
-        // TODO: Fix me
-        return false;
+        HashSet<String> group1 = new HashSet<>();
+        HashSet<String> group2 = new HashSet<>();
+        for (String name : g.labels()){
+            if (checkGroup(name, group1)){
+                group1.add(name);
+                continue;
+            }
+            if (checkGroup(name, group2)){
+                group2.add(name);
+                continue;
+            }
+            return false;
+        }
+        return true;
+    }
+
+    private boolean checkGroup(String name, Set<String> group){
+        Set<String> neighbors = g.neighbors(name);
+        for (String neighbor : neighbors){
+            if (group.contains(neighbor)){
+                return false;
+            }
+        }
+        return true;
     }
 
 
