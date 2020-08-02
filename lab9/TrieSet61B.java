@@ -17,6 +17,7 @@ public interface TrieSet61B {
     /** Returns the longest prefix of KEY that exists in the Trie
      * Not required for Lab 9. If you don't implement this, throw an
      * UnsupportedOperationException.
+     * @return
      */
     String longestPrefixOf(String key);
 

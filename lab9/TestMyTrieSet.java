@@ -55,7 +55,12 @@ public class TestMyTrieSet {
     }
 
     public static void main(String[] args) {
-        jh61b.junit.TestRunner.runTests(TestMyTrieSet.class);
+        //jh61b.junit.TestRunner.runTests(TestMyTrieSet.class);
+        MyTrieSet t = new MyTrieSet();
+        t.add("hello");
+        t.add("hi");
+        t.add("help");
+        t.add("zebra");
     }
 
 
