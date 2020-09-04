@@ -2,18 +2,26 @@ package byow.Core;
 
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
+import edu.princeton.cs.algs4.StdDraw;
 
 public class Engine {
     TERenderer ter = new TERenderer();
     /* Feel free to change the width and height. */
     public static final int WIDTH = 80;
     public static final int HEIGHT = 30;
+    World world;
 
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
      * including inputs from the main menu.
      */
     public void interactWithKeyboard() {
+        ter.initialize(WIDTH, HEIGHT);
+
+    }
+
+    private void setUI(){
+        StdDraw.line(0, HEIGHT - 2, WIDTH, HEIGHT - 2);
     }
 
     /**
@@ -45,8 +53,33 @@ public class Engine {
         //
         // See proj3.byow.InputDemo for a demo of how you can make a nice clean interface
         // that works for many different input types.
+        ter.initialize(WIDTH, HEIGHT);
+        InputString ISD = new InputString(input);
+        char next = ISD.getNextKey();
+        if (next == 'n'){
+            StringBuilder seed = new StringBuilder();
+            next = ISD.getNextKey();
+            while (next != 's'){
+                seed.append(next);
+                next = ISD.getNextKey();
+            }
+            int realSeed = Integer.parseInt(String.valueOf(seed));
+            world = new World(WIDTH, HEIGHT, realSeed);
+            world.generateRandomWorld();
+        }
 
-        TETile[][] finalWorldFrame = null;
-        return finalWorldFrame;
+        while (ISD.possibleNextInput()){
+            next = ISD.getNextKey();
+            switch(next){
+                case 'a': world.player.toWest();    break;
+                case 'd': world.player.toEast();    break;
+                case 'w': world.player.toNorth();   break;
+                case 's': world.player.toSouth();   break;
+                default: break;
+            }
+            world.updatePlayerPosition();
+        }
+        ter.renderFrame(world.getWorld());
+        return world.getWorld();
     }
 }
