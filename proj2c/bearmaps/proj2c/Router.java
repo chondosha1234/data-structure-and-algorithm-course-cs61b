@@ -1,5 +1,9 @@
 package bearmaps.proj2c;
 
+import bearmaps.hw4.AStarSolver;
+import bearmaps.hw4.streetmap.Node;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -24,10 +28,9 @@ public class Router {
      */
     public static List<Long> shortestPath(AugmentedStreetMapGraph g, double stlon, double stlat,
                                           double destlon, double destlat) {
-        //long src = g.closest(stlon, stlat);
-        //long dest = g.closest(destlon, destlat);
-        //return new WeirdSolver<>(g, src, dest, 20).solution();
-        return null;
+        long src = g.closest(stlon, stlat);
+        long dest = g.closest(destlon, destlat);
+        return new AStarSolver<>(g, src, dest, 20).solution();
     }
 
     /**
@@ -39,8 +42,28 @@ public class Router {
      * route.
      */
     public static List<NavigationDirection> routeDirections(AugmentedStreetMapGraph g, List<Long> route) {
-        /* fill in for part IV */
-        return null;
+        ArrayList<NavigationDirection> directions = new ArrayList<>();
+        Long start = route.get(0);
+        Long next = route.get(1);
+        String prevName = g.name(start);
+        double prevBearing = NavigationDirection.bearing(g.lon(start), g.lon(next), g.lat(start), g.lat(next));
+
+        for (int i = 0; i < route.size(); i++){
+            int j = i + 1;
+            Long id1 = route.get(i);
+            Long id2 = route.get(j);
+            NavigationDirection NavDir = new NavigationDirection();
+            double bearing = NavigationDirection.bearing(g.lon(id1), g.lon(id2), g.lat(id1), g.lat(id2));
+            int direction = NavigationDirection.getDirection(prevBearing, bearing);
+            NavDir.direction = direction;
+            NavDir.way = g.name(id1);  //or no name
+            if (!prevName.equals(g.name(id1))) {
+                prevName = g.name(id1);
+            }
+            prevBearing = bearing;
+            directions.add(NavDir);
+        }
+        return directions;
     }
 
     /**

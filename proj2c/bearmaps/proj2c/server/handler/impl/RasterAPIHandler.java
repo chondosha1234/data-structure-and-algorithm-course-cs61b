@@ -17,8 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static bearmaps.proj2c.utils.Constants.SEMANTIC_STREET_GRAPH;
-import static bearmaps.proj2c.utils.Constants.ROUTE_LIST;
+import static bearmaps.proj2c.utils.Constants.*;
 
 /**
  * Handles requests from the web browser for map images. These images
@@ -84,12 +83,165 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
      */
     @Override
     public Map<String, Object> processRequest(Map<String, Double> requestParams, Response response) {
-        //System.out.println("yo, wanna know the parameters given by the web browser? They are:");
-        //System.out.println(requestParams);
+
         Map<String, Object> results = new HashMap<>();
-        System.out.println("Since you haven't implemented RasterAPIHandler.processRequest, nothing is displayed in "
-                + "your browser.");
+
+        //get information from request map
+        double lrlon = requestParams.get("lrlon");
+        double ullon = requestParams.get("ullon");
+        double ullat = requestParams.get("ullat");
+        double lrlat = requestParams.get("lrlat");
+        double width = requestParams.get("w");
+        double height = requestParams.get("h");
+
+        //calculate various numbers to find pictures
+        double reqLonDPP = (lrlon - ullon) / width;  //the longitude distance per pixel for request query box
+        int D = findDepth(reqLonDPP);        //image depth or blurriness variable  0-7
+        int K = (int) Math.pow(2, D) - 1;     //the number of possible pictures in X and Y direction  (minus 1)
+
+        int upperLeftX = findCorner(ullon, K+1);  //upper right tile x coordinate
+        int upperLeftY = findCorner(ullat, K+1);  //upper right tile y coordinate
+        int lowerRightX = findCorner(lrlon, K+1);
+        int lowerRightY = findCorner(lrlat, K+1);
+        int xTiles = lowerRightX - upperLeftX + 1;
+        int yTiles = lowerRightY - upperLeftY + 1;
+        int x = upperLeftX;            //used to fill out png filenames
+        int y = upperLeftY;
+
+        //make 2D string array and use double loop to populate, use string format to fill in png file name using variables
+        String[][] renderGrid = new String[yTiles][xTiles];
+        for (int i = 0; i < yTiles; i++){
+            for (int j = 0; j < xTiles; j++){
+                String png = String.format("d%d_x%d_y%d.png", D, x, y);
+                renderGrid[i][j] = png;
+                x += 1;
+            }
+            x = upperLeftX;
+            y += 1;
+        }
+
+        //calculate the coordinate for the rastered image, method has booleans for x/y axis and upper/lower position
+        double rasterULLon = getImgCoordinates(upperLeftX, K+1, true, false);
+        double rasterULLat = getImgCoordinates(upperLeftY, K+1, false, false);
+        double rasterLRLon = getImgCoordinates(lowerRightX, K+1, true, true);
+        double rasterLRLat = getImgCoordinates(lowerRightY, K+1, false, true);
+        boolean querySuccess = checkSuccess(rasterULLon, rasterLRLon, rasterULLat, rasterLRLat);
+
+        //put all calculated results into map to return
+        results.put("raster_ul_lon", rasterULLon);
+        results.put("raster_ul_lat", rasterULLat);
+        results.put("raster_lr_lon", rasterLRLon);
+        results.put("raster_lr_lat", rasterLRLat);
+        results.put("render_grid", renderGrid);
+        results.put("depth", D);
+        results.put("query_success", true);
+
+        /*for (int i = 0; i < yTiles; i++) {
+            for (int j = 0; j < xTiles; j++) {
+                System.out.print(renderGrid[i][j] + "  ");
+            }
+        }
+        System.out.println();
+        System.out.println(yTiles + "  " + xTiles);
+        System.out.println(results);*/
+
         return results;
+    }
+
+    /** helper method written by me
+     * finds the depth D (from 0 - 7) of the raster request
+     * LonDPP of depth should be less than or equal to request LonDPP
+     * @param requestLonDPP
+     * @return
+     */
+    private int findDepth(double requestLonDPP){
+        int depth = 0;
+        double TopDPP = (ROOT_LRLON - ROOT_ULLON) / TILE_SIZE;  //LonDPP at depth 7 (lowest possible)
+        while (depth < 7) {
+            if (TopDPP <= requestLonDPP) {
+                return depth;
+            } else {
+                TopDPP = TopDPP / 2;
+                depth += 1;
+            }
+        }
+        return depth;
+    }
+
+    /** method written by me
+     * find the x or y coordinates of image for top left or bottom right
+     * corner image
+     * @param K
+     * @param position
+     * @return
+     */
+    private int findCorner(double position, int K){
+        double distPerImage;
+        double queryDist;
+        if (position < 0){
+            if (position < ROOT_ULLON){
+                return 0;
+            }else if(position > ROOT_LRLON){
+                return K-1;
+            }
+            distPerImage = distPerImg(K, true);
+            queryDist = position - ROOT_ULLON;
+        }else {
+            if (position > ROOT_ULLAT){
+                return 0;
+            }else if (position < ROOT_LRLAT){
+                return K-1;
+            }
+            distPerImage = distPerImg(K, false);
+            queryDist = ROOT_ULLAT - position;
+        }
+        double tile = queryDist / distPerImage;
+        return (int) Math.floor(tile);
+    }
+
+    /** method written by me
+     * takes an img (given by the X or Y coordinate in the image png
+     * and returns the LAT or LON coordinate
+     * @param dimension
+     * @param K
+     * @param isX
+     * @return
+     */
+    private double getImgCoordinates(int dimension, int K, boolean isX, boolean lower){
+        double distPerImg;
+        double coordinate;
+        if (isX){
+            distPerImg = distPerImg(K, isX);
+            coordinate = ROOT_ULLON + (distPerImg * dimension);
+            if (lower){
+                coordinate += distPerImg;
+            }
+        }else{
+            distPerImg = distPerImg(K, isX);
+            coordinate = ROOT_ULLAT - (distPerImg * dimension);
+            if (lower){
+                coordinate -= distPerImg;
+            }
+        }
+        return coordinate;
+    }
+
+    /** small helper method to calculate the longitudinal or latitudinal distance per image based on Depth */
+    private double distPerImg(int K, boolean isX){
+        if (isX){
+            return (ROOT_LRLON - ROOT_ULLON) / K;
+        }else{
+            return (ROOT_ULLAT - ROOT_LRLAT) / K;
+        }
+    }
+
+    /** method written by me
+     * checks if the query can be successful
+     * if the query box is outside range it is false, or if the query just doesnt make sense
+     * @return
+     */
+    private boolean checkSuccess(double rasterULLon, double rasterLRLon, double rasterULLat, double rasterLRLat){
+        return !(rasterULLon > rasterLRLon) && !(rasterULLat < rasterLRLat);
     }
 
     @Override
