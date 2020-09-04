@@ -9,9 +9,19 @@ import java.util.List;
  * size as the ith Bed.
  */
 public class BnBSolver {
+    List<Bear> lessBear;
+    List<Bear> equalsBear;
+    List<Bear> greaterBear;
+    List<Bed> lessBed;
+    List<Bed> equalsBed;
+    List<Bed> greaterBed;
 
     public BnBSolver(List<Bear> bears, List<Bed> beds) {
         // TODO: Fix me.
+    }
+
+    private void quickSort(){
+
     }
 
     /**
