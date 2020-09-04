@@ -40,10 +40,15 @@ public class MergeSort {
      * @return         A Queue of queues, each containing an item from items.
      *
      */
-    private static <Item extends Comparable> Queue<Queue<Item>>
-            makeSingleItemQueues(Queue<Item> items) {
-        // Your code here!
-        return null;
+    private static <Item extends Comparable> Queue<Queue<Item>> makeSingleItemQueues(Queue<Item> items) {
+        Queue<Queue<Item>> siq = new Queue<>();
+        for (Item i : items){
+            Item next = i;
+            Queue<Item> single = new Queue<>();
+            single.enqueue(next);
+            siq.enqueue(single);
+        }
+        return siq;
     }
 
     /**
@@ -61,8 +66,13 @@ public class MergeSort {
      */
     private static <Item extends Comparable> Queue<Item> mergeSortedQueues(
             Queue<Item> q1, Queue<Item> q2) {
-        // Your code here!
-        return null;
+
+        Queue<Item> resultQueue = new Queue<>();
+        while(!q1.isEmpty() && !q2.isEmpty()) {
+            resultQueue.enqueue(getMin(q1, q2));
+        }
+
+        return resultQueue;
     }
 
     /**
@@ -77,7 +87,15 @@ public class MergeSort {
      */
     public static <Item extends Comparable> Queue<Item> mergeSort(
             Queue<Item> items) {
-        // Your code here!
+        Queue<Item> sortedQueue;
+        Queue<Queue<Item>> siq = makeSingleItemQueues(items);
+        while (siq.size() > 1){
+            Queue<Item> q1 = siq.dequeue();
+            Queue<Item> q2 = siq.dequeue();
+            sortedQueue = mergeSortedQueues(q1, q2);
+            siq.enqueue(sortedQueue);
+        }
+        items = siq.dequeue();
         return items;
     }
 }
