@@ -17,6 +17,7 @@ public class World {
     double worldSize;
     double percentFilled;
     Random rand;
+    int SEED;
     List<Door> doorList;  //list of hash maps which hold doors and their string description
     List<Door> openDoors;
 
@@ -32,9 +33,11 @@ public class World {
         worldHeight = height;
         worldSize = width * height;
         percentFilled = 0.0;
+        this.SEED = SEED;
         rand = new Random(SEED);
         doorList = new ArrayList<>();
         openDoors = new ArrayList<>();
+        player = new Player(this);   //put this world itself into constructor
 
         //fill world map with NOTHING tiles first
         for (int x = 0; x < width; x += 1) {
@@ -58,7 +61,7 @@ public class World {
         drawArea(nextRoom);
         percentFilled = nextRoom.getArea() / worldSize;
         Point p = placePlayer(start);      //player's start position
-        player = new Player(p, this);   //put this world itself into constructor
+        player.initialize(p);
 
         while (percentFilled < 0.55){
             nextDoor = selectDoor();
@@ -98,6 +101,38 @@ public class World {
      */
     public TETile[][] getWorld(){
         return world;
+    }
+
+    /** set world grid to this grid
+     *
+     * @param grid TETile grid, probably from load game
+     */
+    public void setWorld(TETile[][] grid){
+        world = grid;
+    }
+
+    /** return the random seed of world for load games
+     *
+     * @return  integer for seed
+     */
+    public int getSeed(){
+        return SEED;
+    }
+
+    /** set the world's random seed
+     *
+     * @param seed  integer, probably from load game
+     */
+    public void setSeed(int seed){
+        SEED = seed;
+    }
+
+    /** get the player object associated with this world instance
+     *
+     * @return  Player object
+     */
+    public Player getPlayer(){
+        return player;
     }
 
     /** place your player avatar at a point in the first room
