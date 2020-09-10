@@ -18,8 +18,7 @@ import java.awt.Color;
 
 public class Tileset {
     public static final TETile AVATAR = new TETile('@', Color.white, Color.black, "you");
-    public static final TETile WALL = new TETile('#', new Color(216, 128, 128), Color.darkGray,
-            "wall");
+    public static final TETile WALL = new TETile('|', Color.red, Color.darkGray, "wall");
     public static final TETile FLOOR = new TETile('·', new Color(128, 192, 128), Color.black,
             "floor");
     public static final TETile NOTHING = new TETile(' ', Color.black, Color.black, "nothing");
@@ -33,6 +32,33 @@ public class Tileset {
     public static final TETile SAND = new TETile('▒', Color.yellow, Color.black, "sand");
     public static final TETile MOUNTAIN = new TETile('▲', Color.gray, Color.black, "mountain");
     public static final TETile TREE = new TETile('♠', Color.green, Color.black, "tree");
+    public static final TETile HEART = new TETile('❤', Color.red, Color.black, "heart");
+
+    //new Color(216, 128, 128)   original wall color
+
+    /** return a tile type given the character reference
+     *
+     * @param c   character that matches a tile
+     * @return    TETile
+     */
+    public static TETile charToTile(char c){
+        switch (c){
+            case '@': return AVATAR;
+            case '|': return WALL;
+            case '·': return FLOOR;
+            case ' ': return NOTHING;
+            case '"': return GRASS;
+            case '≈': return WATER;
+            case '❀': return FLOWER;
+            case '█': return LOCKED_DOOR;
+            case '▢': return UNLOCKED_DOOR;
+            case '▒': return SAND;
+            case '▲': return MOUNTAIN;
+            case '♠': return TREE;
+            case '❤': return HEART;
+            default: return null;
+        }
+    }
 }
 
 

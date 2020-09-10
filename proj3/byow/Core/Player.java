@@ -4,19 +4,41 @@ import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 
 public class Player {
-    Point position;
-    Point lastPosition;
-    int xPos, yPos;
-    TETile[][] world;
-    World w;
+    private Point position;
+    private Point lastPosition;
+    private int xPos, yPos;
+    private TETile[][] world;
+    private World w;
+    private int life;
 
-    public Player(Point startPosition, World w){
-        position = startPosition;
+
+    public Player(World w){
+        world = w.getWorld();    //array of tiles from world
+        this.w = w;        //world object where this player is
+        life = 5;
+    }
+
+    /** needed to split the initialization into 2 parts */
+    public void initialize(Point start){
+        position = start;
         lastPosition = position;
         xPos = position.getX();
         yPos = position.getY();
-        world = w.getWorld();    //array of tiles from world
-        this.w = w;        //world object where this player is
+    }
+
+    /** method to take damage, called when a monster attacks the player
+     *
+     */
+    public void takeDamage(){
+        life -= 1;
+    }
+
+    /** returns the amount of life, can be used to update HUD
+     *
+     * @return  integer, amount of life left
+     */
+    public int getLife(){
+        return life;
     }
 
     public void updateWorld(){

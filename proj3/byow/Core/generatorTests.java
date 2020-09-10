@@ -7,7 +7,8 @@ public class generatorTests {
 
     public static void main(String[] args){
         Engine eng = new Engine();
-        eng.interactWithInputString("n9281s");
+        //eng.interactWithInputString("n9281sww:qld");
+        eng.interactWithKeyboard();
 
 
         /*
@@ -16,7 +17,8 @@ public class generatorTests {
         TERenderer ter = new TERenderer();
         ter.initialize(width, height);
         World newWorld = new World(width, height, 92884);
-        TETile[][] world = newWorld.generateRandomWorld();
+        newWorld.generateRandomWorld();
+        //Engine.saveGame(newWorld.getWorld());
         /*
         Door nextDoor;
         boolean reverse = false;
