@@ -15,7 +15,9 @@ public class MemoryGame {
     private Random rand;
     private boolean gameOver;
     private boolean playerTurn;
+    private char[] mode;
     private static final char[] CHARACTERS = "abcdefghijklmnopqrstuvwxyz".toCharArray();
+    private static final char[] RUSSIAN = "йцукенгшщзхъфывапролджэячсмитьбю".toCharArray();
     private static final String[] ENCOURAGEMENT = {"You can do this!", "I believe in you!",
                                                    "You got this!", "You're a star!", "Go Bears!",
                                                    "Too easy for you!", "Wow, so impressive!"};
@@ -48,6 +50,20 @@ public class MemoryGame {
         rand = new Random(seed);
     }
 
+    /** set game mode to English or Russian
+     *
+     * @param c  the user input to choose mode
+     */
+    private void chooseMode(char c){
+        char choice = Character.toLowerCase(c);
+        if (choice == 'r'){
+            mode = RUSSIAN;
+        }else{
+            mode = CHARACTERS;
+        }
+
+    }
+
     /** generate random string of length N
      *
      * @param n  length of return string
@@ -57,8 +73,8 @@ public class MemoryGame {
         StringBuilder s = new StringBuilder(n);
         int index;
         for (int i = 0; i < n; i++){
-            index = uniform(rand, 0, CHARACTERS.length);
-            s.append(CHARACTERS[index]);
+            index = uniform(rand, 0, mode.length);
+            s.append(mode[index]);
         }
         return s.toString();
     }
@@ -139,7 +155,7 @@ public class MemoryGame {
                 s.append(nextChar);
                 n--;
             }
-            StdDraw.clear(Color.BLACK);
+            StdDraw.clear(Color.BLACK);  // causing flash?
             setUI();
             StdDraw.text(width/2, height/2, s.toString());
             StdDraw.show();
@@ -148,10 +164,29 @@ public class MemoryGame {
         return s.toString();
     }
 
+    private void modeMenu(){
+        StdDraw.clear(Color.BLACK);
+        StdDraw.setPenColor(Color.WHITE);
+        StdDraw.text(width/2, height/2, "(E) English mode");
+        StdDraw.text(width/2, height/2 - 2, "(R) Russian mode");
+        StdDraw.show();
+        while (true) {
+            if (StdDraw.hasNextKeyTyped()) {
+                char choice = StdDraw.nextKeyTyped();
+                chooseMode(choice);
+                return;
+            }
+        }
+    }
+
+    /** method to start the game, sets initial variables and has a loop until gameOver is reached
+     * generates a string, draws a frame, solicits user input, then checks if gameOver
+     */
     public void startGame() {
         gameOver = false;
         round = 1;
         String randString, answer;
+        modeMenu();
 
         while (!gameOver){
             randString = generateRandomString(round);
