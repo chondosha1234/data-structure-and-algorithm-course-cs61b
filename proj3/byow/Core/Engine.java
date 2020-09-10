@@ -2,26 +2,110 @@ package byow.Core;
 
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
+import byow.TileEngine.Tileset;
 import edu.princeton.cs.algs4.StdDraw;
 
+import java.awt.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+
+
 public class Engine {
-    TERenderer ter = new TERenderer();
+    TERenderer ter;
     /* Feel free to change the width and height. */
     public static final int WIDTH = 80;
     public static final int HEIGHT = 30;
     World world;
+    Point savedPosition;
+    int savedSeed;
 
+    public Engine(){
+        ter = new TERenderer();
+        ter.initialize(WIDTH, HEIGHT);
+    }
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
      * including inputs from the main menu.
      */
     public void interactWithKeyboard() {
-        ter.initialize(WIDTH, HEIGHT);
-
+        InputKeyboard IKD = new InputKeyboard();
+        char nextChar;
+        startMenu();
+        while (IKD.possibleNextInput()){
+            //setUI();
+            nextChar = IKD.getNextKey();
+            processInput(String.valueOf(nextChar), IKD);
+            ter.renderFrame(world.getWorld());
+        }
     }
 
+    private void startMenu(){
+        char choice;
+        StdDraw.clear(Color.BLACK);
+        StdDraw.setPenColor(Color.WHITE);
+        StdDraw.text(.5, .5, "(n) New World");
+        StdDraw.text(.5, .4, "(l) Load World");
+        StdDraw.show();
+        while (true) {
+            if (StdDraw.hasNextKeyTyped()) {
+                choice = StdDraw.nextKeyTyped();
+
+                if (choice == 'l') {
+                    world = new World(WIDTH, HEIGHT, 0);
+                    Player player = world.getPlayer();
+                    TETile[][] saved = loadGame();
+                    player.initialize(savedPosition);
+                    world.setSeed(savedSeed);
+                    world.setWorld(saved);
+                    ter.renderFrame(world.getWorld());
+                    return;
+                } else if (choice == 'n') {
+                    StringBuilder s = new StringBuilder();
+                    StdDraw.clear(Color.BLACK);
+                    StdDraw.text(.5, .5, "Enter seed, press S key when finished");
+                    StdDraw.show();
+                    while (choice != 's') {
+                        s.append(choice);
+                        while (true) {
+                            if (StdDraw.hasNextKeyTyped()) {
+                                choice = StdDraw.nextKeyTyped();
+                                break;
+                            }
+                        }
+                    }
+                    s.append('s');
+                    interactWithInputString(s.toString());
+                    return;
+                }
+            }
+        }
+    }
+
+    /** sets the HUD at the top of screen
+     * can include life bar,  mouse descriptions, etc.
+     */
     private void setUI(){
         StdDraw.line(0, HEIGHT - 2, WIDTH, HEIGHT - 2);
+        int currentLife = world.getPlayer().getLife();
+        for (int i= 0; i < currentLife; i++) {
+            StdDraw.text(i + 2, HEIGHT - 1, "❤");
+        }
+        String currentMouse = mousePosition();
+        StdDraw.text(WIDTH - 5, HEIGHT - 1, currentMouse);
+    }
+
+    /** gets current mouse coordinates, checks it against TETile grid of world and returns String description
+     * of the tile at that spot
+     * @return  string, description of TETile object
+     */
+    private String mousePosition(){
+        int mouseX = (int) StdDraw.mouseX();
+        int mouseY = (int) StdDraw.mouseY();
+        TETile[][] grid = world.getWorld();
+        TETile tile = grid[mouseX][mouseY];
+        return tile.description();
     }
 
     /**
@@ -53,23 +137,106 @@ public class Engine {
         //
         // See proj3.byow.InputDemo for a demo of how you can make a nice clean interface
         // that works for many different input types.
-        ter.initialize(WIDTH, HEIGHT);
-        InputString ISD = new InputString(input);
-        char next = ISD.getNextKey();
-        if (next == 'n'){
-            StringBuilder seed = new StringBuilder();
-            next = ISD.getNextKey();
-            while (next != 's'){
-                seed.append(next);
-                next = ISD.getNextKey();
-            }
-            int realSeed = Integer.parseInt(String.valueOf(seed));
-            world = new World(WIDTH, HEIGHT, realSeed);
-            world.generateRandomWorld();
+        InputString ISD = new InputString(input);  //input string device
+        StringBuilder str = new StringBuilder(input.length());
+        while(ISD.possibleNextInput()){
+            char next = ISD.getNextKey();
+            str.append(next);
         }
+        processInput(str.toString(), ISD);
+        ter.renderFrame(world.getWorld());
+        return world.getWorld();
+    }
 
-        while (ISD.possibleNextInput()){
-            next = ISD.getNextKey();
+    /** takes a TETile grid and saves it to a text file to be called upon later when game is loaded
+     *
+     * @param currentGrid   a STRING that represents the whole TETile grid
+     */
+    private void saveGame(TETile[][] currentGrid){
+        Point p = world.getPlayer().getPosition();
+        int x = p.getX();
+        int y = p.getY();
+        try {
+            FileWriter writer = new FileWriter("SaveFiles.txt");  //create file / overwrite file
+            writer.write(x + "\n");
+            writer.write(y + "\n");
+            writer.write(world.getSeed() + "\n");
+            writer.write(TETile.toString(currentGrid));     //write the string version of grid
+            writer.close();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    /** load a TETile grid from SavedFiles.txt
+     * only one save can be in the file at a time
+     * @return    TETile grid that represents the world state when save/quit last time
+     */
+    private TETile[][] loadGame(){
+        TETile[][] savedGrid = new TETile[WIDTH][HEIGHT];   //new grid to be returned, Height minus 5 for HUD
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader("SaveFiles.txt"));
+            String line = reader.readLine();    //read first line with player position data
+            int x = Integer.parseInt(line);     //x position
+            line = reader.readLine();
+            int y = Integer.parseInt(line);     //y position
+            savedPosition = new Point(x, y);
+            line = reader.readLine();           //read second line, the seed from saved world
+            savedSeed = Integer.parseInt(line);
+            line = reader.readLine();
+
+            int lineNumber = HEIGHT - 1;      //line number 1 will be the end of the array
+            while (line != null){           //go through each line
+                processLine(line, savedGrid, lineNumber);  //method to convert char into TETile
+                lineNumber -= 1;
+                line = reader.readLine();   //read next line
+            }
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        return savedGrid;
+    }
+
+    /** take a line of input from a text file (the save file) and look at each character
+     * compare that character to Tileset characters and retrieve the needed tile
+     * @param line    String of characters
+     * @param grid    the return grid
+     * @param lineNumber   HEIGHT index (saved file starts reading from the top, grid starts from bottom)
+     */
+    private void processLine(String line, TETile[][] grid, int lineNumber){
+        for (int i = 0; i < line.length(); i++){
+            TETile tile = Tileset.charToTile(line.charAt(i));   //take 1 char from string line, translate to tile
+            grid[i][lineNumber] = tile;                     //set that tile to its position
+        }
+    }
+
+    /** takes a string S and processes it
+     * can be used with InputString and will analyze the entire stirng,
+     * keyboard input will send 1 character at a time
+     * @param s
+     */
+    private void processInput(String s, Input inputType){
+        char next;
+        boolean isPressed = false;
+        for (int i = 0; i < s.length(); i++){
+            next = s.charAt(i);
+            if (next == 'n'){               //N means create new world
+                StringBuilder seed = new StringBuilder();
+                i += 1;
+                next = s.charAt(i);
+                while (next != 's'){      //get each digit before s
+                    seed.append(next);    //add digit to string
+                    i += 1;
+                    next = s.charAt(i);
+                }
+                int realSeed = Integer.parseInt(String.valueOf(seed));   //convert string to integer
+                world = new World(WIDTH, HEIGHT, realSeed);     //height minus 5 to give room for HUD
+                world.generateRandomWorld();
+            }else if (next == 'l'){          // 'l' key loads the game
+                TETile[][] saved = loadGame();
+                world.setWorld(saved);
+            }
+
             switch(next){
                 case 'a': world.player.toWest();    break;
                 case 'd': world.player.toEast();    break;
@@ -78,8 +245,28 @@ public class Engine {
                 default: break;
             }
             world.updatePlayerPosition();
+
+            if (inputType instanceof InputString){
+                if (next == ':'){
+                    isPressed = true;
+                }
+                if (next == 'q' && isPressed){
+                    saveGame(world.getWorld());
+                }
+            }else {
+                if (next == ':') {
+                    while(true) {
+                        if (StdDraw.hasNextKeyTyped()) {
+                            next = StdDraw.nextKeyTyped();
+                            break;
+                        }
+                    }
+                    if (next == 'q') {
+                        saveGame(world.getWorld());
+                        System.exit(0);
+                    }
+                }
+            }
         }
-        ter.renderFrame(world.getWorld());
-        return world.getWorld();
     }
 }
