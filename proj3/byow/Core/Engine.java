@@ -5,7 +5,6 @@ import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 import edu.princeton.cs.algs4.StdDraw;
 
-import java.awt.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -18,8 +17,9 @@ public class Engine {
     public static final int WIDTH = 80;
     public static final int HEIGHT = 30;
     World world;
-    Point savedPosition;
-    int savedSeed;
+    public Point savedPosition;
+    public int savedSeed;
+    public Input input;
 
     public Engine(){
         ter = new TERenderer();
@@ -31,8 +31,9 @@ public class Engine {
      */
     public void interactWithKeyboard() {
         InputKeyboard IKD = new InputKeyboard();
+        input = IKD;
         char nextChar;
-        startMenu();
+        ter.startMenu(this);
         while (IKD.possibleNextInput()){
             //setUI();
             nextChar = IKD.getNextKey();
@@ -41,47 +42,6 @@ public class Engine {
         }
     }
 
-    private void startMenu(){
-        char choice;
-        StdDraw.clear(Color.BLACK);
-        StdDraw.setPenColor(Color.WHITE);
-        StdDraw.text(.5, .5, "(n) New World");
-        StdDraw.text(.5, .4, "(l) Load World");
-        StdDraw.show();
-        while (true) {
-            if (StdDraw.hasNextKeyTyped()) {
-                choice = StdDraw.nextKeyTyped();
-
-                if (choice == 'l') {
-                    world = new World(WIDTH, HEIGHT, 0);
-                    Player player = world.getPlayer();
-                    TETile[][] saved = loadGame();
-                    player.initialize(savedPosition);
-                    world.setSeed(savedSeed);
-                    world.setWorld(saved);
-                    ter.renderFrame(world.getWorld());
-                    return;
-                } else if (choice == 'n') {
-                    StringBuilder s = new StringBuilder();
-                    StdDraw.clear(Color.BLACK);
-                    StdDraw.text(.5, .5, "Enter seed, press S key when finished");
-                    StdDraw.show();
-                    while (choice != 's') {
-                        s.append(choice);
-                        while (true) {
-                            if (StdDraw.hasNextKeyTyped()) {
-                                choice = StdDraw.nextKeyTyped();
-                                break;
-                            }
-                        }
-                    }
-                    s.append('s');
-                    interactWithInputString(s.toString());
-                    return;
-                }
-            }
-        }
-    }
 
     /** sets the HUD at the top of screen
      * can include life bar,  mouse descriptions, etc.
@@ -138,6 +98,7 @@ public class Engine {
         // See proj3.byow.InputDemo for a demo of how you can make a nice clean interface
         // that works for many different input types.
         InputString ISD = new InputString(input);  //input string device
+        this.input = ISD;
         StringBuilder str = new StringBuilder(input.length());
         while(ISD.possibleNextInput()){
             char next = ISD.getNextKey();
@@ -172,7 +133,7 @@ public class Engine {
      * only one save can be in the file at a time
      * @return    TETile grid that represents the world state when save/quit last time
      */
-    private TETile[][] loadGame(){
+    public TETile[][] loadGame(){
         TETile[][] savedGrid = new TETile[WIDTH][HEIGHT];   //new grid to be returned, Height minus 5 for HUD
         try {
             BufferedReader reader = new BufferedReader(new FileReader("SaveFiles.txt"));
@@ -215,7 +176,7 @@ public class Engine {
      * keyboard input will send 1 character at a time
      * @param s
      */
-    private void processInput(String s, Input inputType){
+    public void processInput(String s, Input inputType){
         char next;
         boolean isPressed = false;
         for (int i = 0; i < s.length(); i++){
@@ -233,8 +194,14 @@ public class Engine {
                 world = new World(WIDTH, HEIGHT, realSeed);     //height minus 5 to give room for HUD
                 world.generateRandomWorld();
             }else if (next == 'l'){          // 'l' key loads the game
-                TETile[][] saved = loadGame();
+                world = new World(WIDTH, HEIGHT, 0);     //make a new world (for new game especially)
+                TETile[][] saved = loadGame();       //use load game method
                 world.setWorld(saved);
+                Player player = world.getPlayer();        //get the player from the new world
+                player.setWorld(saved);
+                player.initialize(savedPosition);   //set the player position to the loaded game's player position
+                world.setSeed(savedSeed);         //set the loaded game's seed to the current game
+                ter.renderFrame(world.getWorld());
             }
 
             switch(next){
