@@ -41,8 +41,8 @@ public class Player {
         return life;
     }
 
-    public void updateWorld(){
-        world = w.getWorld();
+    public void setWorld(TETile[][] grid){
+        world = grid;
     }
 
     public Point getPosition(){
