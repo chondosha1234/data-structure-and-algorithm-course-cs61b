@@ -1,5 +1,8 @@
 package byow.TileEngine;
 
+import byow.Core.Engine;
+import byow.Core.Player;
+import byow.Core.World;
 import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.Color;
@@ -87,6 +90,8 @@ public class TERenderer {
         int numXTiles = world.length;
         int numYTiles = world[0].length;
         StdDraw.clear(new Color(0, 0, 0));
+        Font font = new Font("Monaco", Font.BOLD, TILE_SIZE - 2);   //set font back after start menu
+        StdDraw.setFont(font);
         for (int x = 0; x < numXTiles; x += 1) {
             for (int y = 0; y < numYTiles; y += 1) {
                 if (world[x][y] == null) {
@@ -97,5 +102,48 @@ public class TERenderer {
             }
         }
         StdDraw.show();
+    }
+
+    /** method to show the start menu before gameplay
+     * should be in this class, because it needs to be in the same window, if StdDraw is opened in another
+     * class file, it opens a separate window
+     */
+    public void startMenu(Engine eng){
+        char choice;
+        StdDraw.clear(Color.BLACK);
+        StdDraw.setPenColor(Color.WHITE);
+        Font menuFont = new Font("Monaco", Font.PLAIN, 30);
+        StdDraw.setFont(menuFont);
+        StdDraw.text(width/2, height/2, "(n) New World");
+        StdDraw.text(width/2, height/2 - 3, "(l) Load World");
+        StdDraw.show();
+
+        while (true) {
+            if (StdDraw.hasNextKeyTyped()) {
+                choice = StdDraw.nextKeyTyped();
+
+                if (choice == 'l') {
+                    eng.processInput(String.valueOf(choice), eng.input);
+                    return;
+                } else if (choice == 'n') {
+                    StringBuilder s = new StringBuilder();
+                    StdDraw.clear(Color.BLACK);
+                    StdDraw.text(width/2, height/2, "Enter seed, press S key when finished");
+                    StdDraw.show();
+                    while (choice != 's') {
+                        s.append(choice);
+                        while (true) {
+                            if (StdDraw.hasNextKeyTyped()) {
+                                choice = StdDraw.nextKeyTyped();
+                                break;
+                            }
+                        }
+                    }
+                    s.append('s');
+                    eng.interactWithInputString(s.toString());
+                    return;
+                }
+            }
+        }
     }
 }
