@@ -20,10 +20,12 @@ public class Engine {
     public Point savedPosition;
     public int savedSeed;
     public Input input;
+    public boolean gameOver;
 
     public Engine(){
         ter = new TERenderer();
         ter.initialize(WIDTH, HEIGHT);
+        gameOver = false;
     }
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
@@ -33,39 +35,13 @@ public class Engine {
         InputKeyboard IKD = new InputKeyboard();
         input = IKD;
         char nextChar;
-        ter.startMenu(this);
-        while (IKD.possibleNextInput()){
-            //setUI();
+        ter.startMenu(this);      //start menu method needs engine for process input method (which takes input type)
+        while (IKD.possibleNextInput() && !gameOver) {
+            ter.setUI(world);
             nextChar = IKD.getNextKey();
             processInput(String.valueOf(nextChar), IKD);
             ter.renderFrame(world.getWorld());
         }
-    }
-
-
-    /** sets the HUD at the top of screen
-     * can include life bar,  mouse descriptions, etc.
-     */
-    private void setUI(){
-        StdDraw.line(0, HEIGHT - 2, WIDTH, HEIGHT - 2);
-        int currentLife = world.getPlayer().getLife();
-        for (int i= 0; i < currentLife; i++) {
-            StdDraw.text(i + 2, HEIGHT - 1, "❤");
-        }
-        String currentMouse = mousePosition();
-        StdDraw.text(WIDTH - 5, HEIGHT - 1, currentMouse);
-    }
-
-    /** gets current mouse coordinates, checks it against TETile grid of world and returns String description
-     * of the tile at that spot
-     * @return  string, description of TETile object
-     */
-    private String mousePosition(){
-        int mouseX = (int) StdDraw.mouseX();
-        int mouseY = (int) StdDraw.mouseY();
-        TETile[][] grid = world.getWorld();
-        TETile tile = grid[mouseX][mouseY];
-        return tile.description();
     }
 
     /**
@@ -212,6 +188,9 @@ public class Engine {
                 default: break;
             }
             world.updatePlayerPosition();
+            if (world.player.getPosition().equals(world.getEndPoint())){
+                gameOver();
+            }
 
             if (inputType instanceof InputString){
                 if (next == ':'){
@@ -235,5 +214,13 @@ public class Engine {
                 }
             }
         }
+    }
+
+    /** set gameover variable when player reaches locked door
+     *
+     */
+    private void gameOver(){
+        gameOver = true;
+        ter.gameOver();
     }
 }
