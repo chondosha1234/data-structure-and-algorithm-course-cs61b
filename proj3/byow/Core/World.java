@@ -20,6 +20,7 @@ public class World {
     int SEED;
     List<Door> doorList;  //list of hash maps which hold doors and their string description
     List<Door> openDoors;
+    Point endPoint;
 
     /** constructor for a new World
      * it takes a width and height for the world, and fills the area with NOTHING tiles
@@ -93,6 +94,8 @@ public class World {
             }
         }
         openDoors();
+        putLockedDoor();
+        putKey();
     }
 
     /** returns the Tile array of the world to other classes
@@ -133,6 +136,14 @@ public class World {
      */
     public Player getPlayer(){
         return player;
+    }
+
+    /** get the Point where the locked door is located
+     *
+     * @return Point object representing the locked door endpoint
+     */
+    public Point getEndPoint(){
+        return endPoint;
     }
 
     /** place your player avatar at a point in the first room
@@ -331,6 +342,37 @@ public class World {
     private void openDoors(){
         for(Door d : openDoors){
             world[d.getX()][d.getY()] = Tileset.FLOOR;
+        }
+    }
+
+    /** method to randomly select points on the map, and if it is a plain wall, make it a locked door
+     * after 1 locked door is placed, the method returns.  This locked door will be the end goal of game
+     */
+    private void putLockedDoor(){
+        while (true) {
+            Point p = selectRandomPoint();
+            int x = p.getX();
+            int y = p.getY();
+            if (world[x][y] == Tileset.WALL) {
+                world[x][y] = Tileset.LOCKED_DOOR;
+                endPoint = p;
+                return;
+            }
+        }
+    }
+
+    /** similar method to putLockedDoor, only places a key on a floor spot.  You need
+     * to step on key and pick it up to open the locked door
+     */
+    private void putKey(){
+        while (true) {
+            Point p = selectRandomPoint();
+            int x = p.getX();
+            int y = p.getY();
+            if (world[x][y] == Tileset.FLOOR) {
+                world[x][y] = Tileset.KEY;
+                return;
+            }
         }
     }
 
