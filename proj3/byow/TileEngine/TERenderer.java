@@ -1,7 +1,6 @@
 package byow.TileEngine;
 
 import byow.Core.Engine;
-import byow.Core.Player;
 import byow.Core.World;
 import edu.princeton.cs.introcs.StdDraw;
 
@@ -145,5 +144,43 @@ public class TERenderer {
                 }
             }
         }
+    }
+
+    /** sets the HUD at the top of screen
+     * can include life bar,  mouse descriptions, etc.
+     */
+    public void setUI(World world){
+        StdDraw.setPenColor(Color.WHITE);
+        StdDraw.line(0, height - 2, width, height - 2);
+        int currentLife = world.getPlayer().getLife();
+        for (int i = 0; i < currentLife; i++) {
+            StdDraw.text(i + 3, height - 1, "❤");
+        }
+        String currentMouse = mousePosition(world);
+        StdDraw.text(width - 5, height - 1, currentMouse);
+        StdDraw.show();
+    }
+
+    /** gets current mouse coordinates, checks it against TETile grid of world and returns String description
+     * of the tile at that spot
+     * @return  string, description of TETile object
+     */
+    private String mousePosition(World world){
+        int mouseX = (int) StdDraw.mouseX();
+        int mouseY = (int) StdDraw.mouseY();
+        TETile[][] grid = world.getWorld();
+        TETile tile = grid[mouseX][mouseY];
+        return tile.description();
+    }
+
+    /** called when player reaches locked door
+     * clears screen and displays gameover message
+     */
+    public void gameOver(){
+        StdDraw.clear(Color.BLACK);
+        StdDraw.text(width/2, height/2, "GAMEOVER!!!!");
+        StdDraw.show();
+        StdDraw.pause(10000);
+        System.exit(0);
     }
 }
