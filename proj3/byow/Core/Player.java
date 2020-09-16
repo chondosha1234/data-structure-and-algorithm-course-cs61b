@@ -10,12 +10,14 @@ public class Player {
     private TETile[][] world;
     private World w;
     private int life;
+    boolean hasKey;
 
 
     public Player(World w){
         world = w.getWorld();    //array of tiles from world
         this.w = w;        //world object where this player is
         life = 5;
+        hasKey = false;
     }
 
     /** needed to split the initialization into 2 parts */
@@ -62,6 +64,7 @@ public class Player {
         if (checkWall(xPos - 1, yPos)) {
             xPos -= 1;
             setPosition(xPos, yPos);
+            checkKey(xPos, yPos);
         }
     }
 
@@ -69,6 +72,7 @@ public class Player {
         if (checkWall(xPos + 1, yPos)) {
             xPos += 1;
             setPosition(xPos, yPos);
+            checkKey(xPos, yPos);
         }
     }
 
@@ -76,6 +80,7 @@ public class Player {
         if (checkWall(xPos, yPos - 1)) {
             yPos -= 1;
             setPosition(xPos, yPos);
+            checkKey(xPos, yPos);
         }
     }
 
@@ -83,10 +88,19 @@ public class Player {
         if (checkWall(xPos, yPos + 1)) {
             yPos += 1;
             setPosition(xPos, yPos);
+            checkKey(xPos, yPos);
+        }
+    }
+
+    private void checkKey(int x, int y){
+        if (world[x][y] == Tileset.KEY){
+            hasKey = true;
         }
     }
 
     private boolean checkWall(int x, int y){
-        return world[x][y] == Tileset.FLOOR;
+        return world[x][y] == Tileset.FLOOR ||
+                world[x][y] == Tileset.KEY ||       //player can move onto key spot
+                (world[x][y] == Tileset.LOCKED_DOOR && hasKey);    //the spot is a locked door and player has key
     }
 }
