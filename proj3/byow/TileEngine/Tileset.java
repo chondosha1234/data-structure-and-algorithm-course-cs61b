@@ -33,6 +33,7 @@ public class Tileset {
     public static final TETile MOUNTAIN = new TETile('▲', Color.gray, Color.black, "mountain");
     public static final TETile TREE = new TETile('♠', Color.green, Color.black, "tree");
     public static final TETile HEART = new TETile('❤', Color.red, Color.black, "heart");
+    public static final TETile KEY = new TETile('¥', Color.yellow, Color.black, "key");
 
     //new Color(216, 128, 128)   original wall color
 
@@ -56,6 +57,7 @@ public class Tileset {
             case '▲': return MOUNTAIN;
             case '♠': return TREE;
             case '❤': return HEART;
+            case '¥': return KEY;
             default: return null;
         }
     }
